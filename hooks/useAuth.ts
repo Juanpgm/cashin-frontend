@@ -55,12 +55,17 @@ export function useAuth() {
       const me = await authService.getMe();
       setUser(me, tokens.access_token, tokens.refresh_token);
       showToast({ message: `¡Bienvenido, ${me.nombre.split(" ")[0]}!`, type: "success" });
+      router.replace("/(tabs)" as never);
     } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string | { msg: string }[] } } })
+        ?.response?.data?.detail;
       const message =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-        "Credenciales incorrectas. Verifica tu email y contraseña.";
+        typeof detail === "string"
+          ? detail
+          : Array.isArray(detail)
+          ? detail.map((d) => d.msg).join(", ")
+          : "Credenciales incorrectas. Verifica tu email y contraseña.";
       showToast({ message, type: "error" });
-      throw err;
     } finally {
       setLoading(false);
     }
@@ -82,11 +87,15 @@ export function useAuth() {
       });
       router.replace("/(auth)/login" as never);
     } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string | { msg: string }[] } } })
+        ?.response?.data?.detail;
       const message =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-        "Error al registrar. Intenta de nuevo.";
+        typeof detail === "string"
+          ? detail
+          : Array.isArray(detail)
+          ? detail.map((d) => d.msg).join(", ")
+          : "Error al registrar. Intenta de nuevo.";
       showToast({ message, type: "error" });
-      throw err;
     } finally {
       setLoading(false);
     }

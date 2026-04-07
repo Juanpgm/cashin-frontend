@@ -4,9 +4,11 @@ export interface UserResponse {
   id: string;
   email: string;
   nombre: string;
-  cedula: string;
-  telefono: string;
+  cedula: string | null;
+  telefono: string | null;
+  rol: string;
   activo: boolean;
+  creditos_disponibles: number;
 }
 
 export interface TokenResponse {
