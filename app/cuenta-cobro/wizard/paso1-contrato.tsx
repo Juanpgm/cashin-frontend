@@ -51,9 +51,16 @@ export default function WizardPaso1Screen() {
   const handleNext = async () => {
     if (!selectedContratoId) return;
 
-    // If we already created an account for this wizard session, reuse it
-    if (wizard.cuentaId) {
-      setWizardContrato(selectedContratoId, selectedMes, selectedAnio);
+    // Only reuse the existing cuenta when the user hasn't changed contrato/mes/año.
+    // If they changed any selection, a new cuenta (with the correct period/contract)
+    // must be created — reusing the old id would attach new activities to the wrong draft.
+    const selectionUnchanged =
+      wizard.cuentaId !== null &&
+      wizard.contratoId === selectedContratoId &&
+      wizard.mes === selectedMes &&
+      wizard.anio === selectedAnio;
+
+    if (selectionUnchanged) {
       router.push("/cuenta-cobro/wizard/paso2-actividades" as never);
       return;
     }
