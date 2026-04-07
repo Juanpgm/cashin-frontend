@@ -140,7 +140,7 @@ export default function WizardPaso2Screen() {
         console.warn("Failed to delete actividad from server:", err);
         // Only roll back for network/server errors, not for 404/410 (already gone)
         const status = (err as { response?: { status?: number } })?.response?.status;
-        if (!status || status < 400 || status >= 500) {
+        if (!status || status >= 500) {
           addWizardActividad(act);
           showToast({ message: "No se pudo eliminar la actividad", type: "error" });
         }
@@ -287,6 +287,9 @@ export default function WizardPaso2Screen() {
                 <TouchableOpacity
                   onPress={() => handleRemove(act)}
                   disabled={deletingIds.has(act.id)}
+                  accessibilityLabel={
+                    deletingIds.has(act.id) ? "Eliminando actividad" : "Eliminar actividad"
+                  }
                 >
                   <Ionicons
                     name="close-circle"
