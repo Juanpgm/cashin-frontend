@@ -50,6 +50,14 @@ export default function WizardPaso1Screen() {
 
   const handleNext = async () => {
     if (!selectedContratoId) return;
+
+    // If we already created an account for this wizard session, reuse it
+    if (wizard.cuentaId) {
+      setWizardContrato(selectedContratoId, selectedMes, selectedAnio);
+      router.push("/cuenta-cobro/wizard/paso2-actividades" as never);
+      return;
+    }
+
     setIsCreating(true);
     try {
       setWizardContrato(selectedContratoId, selectedMes, selectedAnio);

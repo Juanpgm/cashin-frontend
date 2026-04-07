@@ -123,7 +123,20 @@ export default function WizardPaso2Screen() {
   };
 
   const handleRemove = async (act: Actividad) => {
+    if (!cuentaId) return;
+    // Optimistically remove from UI
     removeWizardActividad(act.id);
+    // Persist to backend (activity has a real id if it was saved server-side)
+    if (act.id) {
+      try {
+        await cuentasCobroService.deleteActividad(cuentaId, act.id);
+      } catch (err) {
+        console.warn("Failed to delete actividad from server:", err);
+        // Restore the activity in local state on failure
+        addWizardActividad(act);
+        showToast({ message: "No se pudo eliminar la actividad", type: "error" });
+      }
+    }
   };
 
   const handleNext = () => {
