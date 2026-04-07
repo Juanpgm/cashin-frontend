@@ -50,6 +50,15 @@ const cuentasCobroService = {
     return res.data;
   },
 
+  async deleteActividad(
+    cuentaId: string,
+    actividadId: string
+  ): Promise<void> {
+    await api.delete(
+      `/api/v1/cuentas-cobro/${cuentaId}/actividades/${actividadId}`
+    );
+  },
+
   async bulkActividades(
     cuentaId: string,
     actividades: ActividadCreate[]

@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useCuentaCobroStore } from "@/store/cuenta-cobro.store";
 import { useUIStore } from "@/store/ui.store";
 import { colors } from "@/theme/colors";
 import { borderRadius, spacing } from "@/theme/spacing";
@@ -44,6 +45,8 @@ export default function CuentaCobroDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const showToast = useUIStore((s) => s.showToast);
+  const { setWizardContrato, setWizardCuentaId, setWizardActividades } =
+    useCuentaCobroStore();
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
 
@@ -142,8 +145,15 @@ export default function CuentaCobroDetailScreen() {
     }
   };
 
-  const handleEliminar = () => {
-    Alert.alert(
+  const handleEditarEnWizard = () => {
+    if (!cuenta) return;
+    setWizardContrato(cuenta.contrato_id, cuenta.mes, cuenta.anio);
+    setWizardCuentaId(cuenta.id);
+    setWizardActividades(cuenta.actividades ?? []);
+    router.push("/cuenta-cobro/wizard/paso2-actividades" as never);
+  };
+
+  const handleEliminar = () => {    Alert.alert(
       "Eliminar cuenta",
       "¿Eliminar esta cuenta de cobro en borrador?",
       [
@@ -361,9 +371,7 @@ export default function CuentaCobroDetailScreen() {
           <>
             <Button
               title="Continuar editando"
-              onPress={() =>
-                router.push("/cuenta-cobro/wizard/paso2-actividades" as never)
-              }
+              onPress={handleEditarEnWizard}
               fullWidth
               variant="outline"
               icon={<Ionicons name="pencil" size={18} color={colors.primary} />}
@@ -389,9 +397,7 @@ export default function CuentaCobroDetailScreen() {
         {cuenta.estado === "rechazada" && (
           <Button
             title="Corregir y reenviar"
-            onPress={() =>
-              router.push("/cuenta-cobro/wizard/paso2-actividades" as never)
-            }
+            onPress={handleEditarEnWizard}
             fullWidth
             icon={<Ionicons name="refresh" size={18} color={colors.textInverse} />}
           />

@@ -1,8 +1,5 @@
-import api from "@/utils/api";
-import { tokenStorage, ACCESS_TOKEN_KEY } from "@/utils/api";
+import api, { tokenStorage, ACCESS_TOKEN_KEY, API_URL } from "@/utils/api";
 import type { ChatMessage, ConversationHistory } from "@/types/models";
-
-const API_URL = "https://cashin-api-production.up.railway.app";
 
 export interface ChatMessageRequest {
   message: string;

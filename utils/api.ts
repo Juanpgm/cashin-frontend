@@ -2,8 +2,8 @@ import * as SecureStore from "expo-secure-store";
 import axios, { type AxiosInstance, type AxiosRequestConfig } from "axios";
 import { Platform } from "react-native";
 
-const API_URL =
-  process.env.EXPO_PUBLIC_API_URL ??
+export const API_URL =
+  process.env.EXPO_PUBLIC_API_URL ||
   "https://cashin-api-production.up.railway.app";
 
 export const ACCESS_TOKEN_KEY = "cashin_access_token";

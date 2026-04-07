@@ -39,6 +39,8 @@ export default function WizardPaso2Screen() {
   const [isParsingText, setIsParsingText] = useState(false);
   const [newDesc, setNewDesc] = useState("");
   const [newObligId, setNewObligId] = useState<string>("");
+  // Track activity IDs currently being deleted to prevent double-tap race conditions
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
   const cuentaId = wizard.cuentaId;
 
@@ -123,7 +125,33 @@ export default function WizardPaso2Screen() {
   };
 
   const handleRemove = async (act: Actividad) => {
+    if (!cuentaId) return;
+    // Prevent concurrent deletes of the same activity (double-tap)
+    if (deletingIds.has(act.id)) return;
+
+    setDeletingIds((prev) => new Set(prev).add(act.id));
+    // Optimistically remove from UI
     removeWizardActividad(act.id);
+    // Persist to backend
+    if (act.id) {
+      try {
+        await cuentasCobroService.deleteActividad(cuentaId, act.id);
+      } catch (err) {
+        console.warn("Failed to delete actividad from server:", err);
+        // Only roll back for network/server errors, not for 404/410 (already gone)
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        if (!status || status >= 500) {
+          addWizardActividad(act);
+          showToast({ message: "No se pudo eliminar la actividad", type: "error" });
+        }
+      } finally {
+        setDeletingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(act.id);
+          return next;
+        });
+      }
+    }
   };
 
   const handleNext = () => {
@@ -256,8 +284,18 @@ export default function WizardPaso2Screen() {
                   )}
                   <Text style={styles.actDesc}>{act.descripcion}</Text>
                 </View>
-                <TouchableOpacity onPress={() => handleRemove(act)}>
-                  <Ionicons name="close-circle" size={22} color={colors.error} />
+                <TouchableOpacity
+                  onPress={() => handleRemove(act)}
+                  disabled={deletingIds.has(act.id)}
+                  accessibilityLabel={
+                    deletingIds.has(act.id) ? "Eliminando actividad" : "Eliminar actividad"
+                  }
+                >
+                  <Ionicons
+                    name="close-circle"
+                    size={22}
+                    color={deletingIds.has(act.id) ? colors.disabled : colors.error}
+                  />
                 </TouchableOpacity>
               </View>
             );
